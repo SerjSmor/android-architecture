@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -55,6 +56,9 @@ android {
             events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
         }
     }
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
 }
 
 /*
@@ -97,4 +101,8 @@ dependencies {
     androidTestCompile "com.android.support:recyclerview-v7:$rootProject.supportLibraryVersion"
     androidTestCompile "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
     androidTestCompile "com.android.support:design:$rootProject.supportLibraryVersion"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+}
+repositories {
+    mavenCentral()
 }
