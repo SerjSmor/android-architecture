@@ -1,109 +1,99 @@
-# TODO-MVP
+# Kotlin conversion of todo-mvp
 
-### Summary
+## Summary 
 
-This sample is the base for many of the variants. It showcases a simple
-implementation of the Model-View-Presenter pattern with no architectural
-frameworks. It uses manual dependency injection to provide a repository with
-local and remote data sources. Asynchronous tasks are handled with callbacks.
+I've converted the "todo-mvp" of "android-architecture" project to Kotlin using the Android Studio tooling (ctrl + alt + shift + k). When deciding whether to adopt Kotlin and switch to another language it's usefull seing some mid level complexity examples along side modern architecture.
 
-<img src="https://github.com/googlesamples/android-architecture/wiki/images/mvp.png" alt="Diagram"/>
+If you are unfamiliar with different styles of Android architecture (MVC, MVP, MVW) or their implications I highly recommend going over them anyway if you haven’t yet, https://github.com/googlesamples/android-architecture. 
 
-Note: in a MVP context, the term "view" is overloaded:
+### AddEditTaskActivity code changes outline
 
-  * The class android.view.View will be referred to as "Android View"
-  * The view that receives commands from a presenter in MVP, will be simply called
-"view".
+Java Code
+```
+public class AddEditTaskActivity extends AppCompatActivity{
 
-### Fragments
+      public static final int REQUEST_ADD_TASK = 1;
 
-It uses fragments for two reasons:
+      @Override
+      protected void onCreate(Bundle savedInstanceState) {
+             //….
+      }
 
-  * The separation between Activity and Fragment fits nicely with this
-implementation of MVP: the Activity is the overall controller that creates and
-connects views and presenters.
-  * Tablet layout or screens with multiple views take advantage of the Fragments
-framework.
+     @Override
+     public boolean onSupportNavigateUp() {
+               onBackPressed();
+               return ture;
+     }
 
-### Key concepts
+     @VisibleForTesting
+     public IdlingResouce getCountingIdlingResource() {
+                return EspressoIdlingResource.getIdlingResource();
+     }
+}
+```
+Kotlin Code
+```
+class AddEditTaskActivity : AppCompatActivity() {
 
-There are four features in the app:
+     override fun onCreate(savedInstanceStats: Bundle?) {
+              //….
+     }
 
-  * <code>Tasks</code>
-  * <code>TaskDetail</code>
-  * <code>AddEditTask</code>
-  * <code>Statistics</code>
+     override fun onSupportNavigateUp() : Boolean {
+            onBackPressed()
+            return true
+     }
 
-Each feature has:
+     val countingIdlingResource: IdlingResource
+          @VisibleForTestnig
+          get() = EspressoIdlingResource.getIdlingResource();
 
-  * A contract defining the view and the presenter
-  * An Activity which is responsible for the creation of fragments and presenters
-  * A Fragment which implements the view interface. 
-  * A presenter which implements the presenter interface
+     companion Object {
+          val REQUEST_ADD_TASK = 1
+     }
 
-In general, the business logic lives in the presenter and relies on the view to
-do the Android UI work. 
+}
+```
 
-The view contains almost no logic: it converts the presenter's commands to UI
-actions and listens to user actions, which are passed to the presenter. 
+### Semicolons
+Kotlin doesn’t mandate semicolons. That’s the first step towards Kotlin’s attempt to reduce Java verbosity.
 
-Contracts are interfaces used to define the connection between views and
-presenters.
+### Function declaration
+Keywords ‘override’ and ‘fun’, are straightforward. Putting the return type after the method name is not.
 
-### Dependencies
+`override fun onSupportNavigateUp() : Boolean`
 
-  * Common Android support libraries (<code>com.android.support.\*)</code>
-  * Android Testing Support Library (Espresso, AndroidJUnitRunner…)
-  * Mockito
-  * Guava (null checking)
+First comes the method name then the return type, separated by a colon ‘:’. Got it. More on function declarations can be found https://kotlinlang.org/docs/reference/functions.html.
 
-## Features
 
-### Complexity - understandability
+### Nullability: 
+Kotlin decided to help us devs with our `NullPointerExceptions`. How? With the call safety operator `?` of course. Kotlin mandates we declare which class members, variables and parameters can be null or not. Declaring `Bundle?` in previous snippet implies that saveInstanceState might be null, hence a good well educated programmer must first make the appropriate check.
 
-#### Use of architectural frameworks/libraries/tools: 
-
-None 
-
-#### Conceptual complexity 
-
-Low, as it's a pure MVP implementation for Android
-
-### Testability
-
-#### Unit testing
-
-High, presenters are unit tested as well as repositories and data sources.
-
-#### UI testing
-
-High, injection of fake modules allow for testing with fake data
-
-### Code metrics
-
-Compared to a traditional project with no architecture in place, this sample
-introduces additional classes and interfaces: presenters, a repository,
-contracts, etc. So lines of code and number of classes are higher in MVP.
-
+Yes, the following with result in a compilation error:
 
 ```
--------------------------------------------------------------------------------
-Language                     files          blank        comment           code
--------------------------------------------------------------------------------
-Java                            46           1075           1451           3451
-XML                             34             97            337            601
--------------------------------------------------------------------------------
-SUM:                            80           1172           1788           4052
--------------------------------------------------------------------------------
+override fun onCreate(savedInstanceStats: Bundle?) {
+           savedInstanceState.get(SOME_KEY);
+}
 ```
-### Maintainability
+But doing a lot of `if (savedInstanceState != null)` is kind of ugly. So Kotlin’s `?` is there for us again:
+```
+override fun onCreate(savedInstanceStats: Bundle?) {
+           savedInstanceState?.get(SOME_KEY);
+}
+```
+In case `saveInstanceState` reference is `null`, the method `get()` will not be called and the line would produce a null. This operator can be chained and removes a whole bunch of if-else blocks.
 
-#### Ease of amending or adding a feature
+### Val and var – Kotlin’s mutable and immutable variables
 
-High. 
+`val` are constant values while `var` are variables.  And note – you don’t need to declare a class type. It’s part of Kotlin’s magic. Kotlin infers the type of the variable by the type of the initializer.
 
-#### Learning cost
+`val REQUEST_ADD_TASK = 1`
 
-Low. Features are easy to find and the responsibilities are clear. Developers
-don't need to be familiar with any external dependency to work on the project.
+Here `REQUEST_ADD_TASK` is set to the constant value ‘1’ so Kotlin infers that it’s an integer.
 
+
+------------------
+
+ I've written a blog series, you might find interesting, about the whole experience at http://blog.safedk.com/technology/hello-kotlin-convert-android-project-part-1/, including installation instructions and some conclusions. 
+Disclosure: I'm an employe of SafeDK.
